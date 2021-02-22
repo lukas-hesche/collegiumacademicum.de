@@ -1,6 +1,4 @@
 <!-- image -->
-{{ $DataTarget := substr ( .Get "src" | md5 ) 0 8 }}
-
 {{ $original := .Page.Resources.GetMatch (printf "%s*" (.Get "src")) }}
 {{ $extension := index (last 1 (split $original.Name ".")) 0 }}
 {{ if eq $extension "svg" }}
@@ -21,11 +19,12 @@
 {{ $desc := .Get "desc" | markdownify }}
 {{ $attr := .Get "attr" }}
 
-{{ with .Parent}}
+{{ if (isset .Parent "Name") }}
+
 <figure {{ with .Get "style" }}style="{{.}}"{{ end }} >
     <img alt="{{ .Get "alt" }}"
-        src="" data-src="{{ $image_medium.RelPermalink }}"
-        srcset="" data-srcset="{{ $srcset }}"
+        src="{{ $image_medium.RelPermalink }}"
+        srcset="{{ $srcset }}"
         class="image {{ if eq $extension "svg" }}is-shadowless{{ end }}"/>
     <figcaption>
         {{ if $desc }}
@@ -36,28 +35,31 @@
         <cite>© {{ $attr }}</cite>
     </figcaption>
 </figure>
-{{ else}}
-<figure class="modal-figure" {{ with .Get "style" }}style="{{.}}"{{ end }} >
+
+{{ else }}
+
+<div x-data="{ open: false }">
+<figure class="modal-figure" {{ with .Get "style" }}style="{{.}}"{{ end }}  @click="open = true">
     <img alt="{{ .Get "alt" }}"
         src="{{ $image_small.RelPermalink }}"
         srcset="{{ $srcset }}"
-        data-target="modal-{{ $DataTarget }}"
-        class="image modal-button {{ if eq $extension "svg" }}is-shadowless{{ end }}"/>
+        class="image modal-button {{ if eq $extension "svg" }}is-shadowless{{ end }}"
+        @click="open = true"
+    />
     <figcaption>
         <cite>© {{ $attr }}</cite>
     </figcaption>
 </figure>
 
-<div id="modal-{{ $DataTarget }}" class="modal">
-        <div class="modal-background"></div>
-        <div class="modal-content {{ if eq $extension "svg" }}box{{ end }}">
+<div class="modaal" x-show="open">
+        <article class="{{ if eq $extension "svg" }}box{{ end }}">
             {{ if len .Inner }}
                 {{ .Inner }}
             {{ else }}
             <figure>
                 <img alt="{{ .Get "alt" }}"
-                    src="" data-src="{{ $image_medium.RelPermalink }}"
-                    srcset="" data-srcset="{{ $srcset }}"
+                    src="{{ $image_medium.RelPermalink }}"
+                    srcset="{{ $srcset }}"
                     class="image"/>
                 <figcaption>
                     {{ if $desc }}
@@ -69,8 +71,10 @@
                 </figcaption>
             </figure>
             {{ end }}
-        </div>
-        <button class="modal-close" aria-label="close"></button>
+        </article>
+        <button class="close" @click="isOpened = false"></button>
 </div>
+</div>
+
 {{ end }}
 <!-- image -->
